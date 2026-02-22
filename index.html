@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRAVITE</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+background:#050505;
+color:#eaeaea;
+font-family:'Cinzel',serif;
+overflow-x:hidden;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+z-index:-1;
+}
+
+.hero,.section{
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+}
+
+.hero h1{
+font-size:3rem;
+letter-spacing:.5em;
+}
+
+.hero p{
+margin-top:20px;
+letter-spacing:.6em;
+font-size:.8rem;
+opacity:.6;
+}
+
+.section h2{
+letter-spacing:.3em;
+}
+
+footer{
+padding:40px;
+text-align:center;
+opacity:.3;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hero">
+<h1>GRAVITE</h1>
+<p>SUB PONDERE, IMPERIUM</p>
+</div>
+
+<div class="section">
+<h2>NON OMNIBUS</h2>
+</div>
+
+<div class="section">
+<h2>OBSIDIAN SERIES</h2>
+</div>
+
+<footer>© 2026 GRAVITE</footer>
+
+<script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+
+<script>
+/* ---------- SCENE SETUP ---------- */
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505);
+
+const camera = new THREE.PerspectiveCamera(
+65,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+camera.position.set(0,0,9);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+renderer.domElement.style.position="fixed";
+renderer.domElement.style.top="0";
+renderer.domElement.style.left="0";
+renderer.domElement.style.zIndex="-1";
+document.body.appendChild(renderer.domElement);
+
+/* ---------- LIGHTING ---------- */
+
+const keyLight = new THREE.DirectionalLight(0xffffff,1.2);
+keyLight.position.set(5,8,6);
+scene.add(keyLight);
+
+const rimLight = new THREE.DirectionalLight(0xffffff,0.4);
+rimLight.position.set(-5,-5,-5);
+scene.add(rimLight);
+
+/* ---------- MAIN OBJECT GROUP ---------- */
+
+const group = new THREE.Group();
+scene.add(group);
+
+/* MONOLITH CORE STRUCTURE */
+
+const slabGeometry = new THREE.BoxGeometry(2.5,5,1);
+
+const slabMaterial = new THREE.MeshStandardMaterial({
+color:0x111111,
+metalness:0.85,
+roughness:0.25
+});
+
+const slab = new THREE.Mesh(slabGeometry,slabMaterial);
+group.add(slab);
+
+/* GLOWING RING */
+
+const ringGeometry = new THREE.TorusGeometry(3,0.08,16,100);
+
+const ringMaterial = new THREE.MeshBasicMaterial({
+color:0xffffff
+});
+
+const ring = new THREE.Mesh(ringGeometry,ringMaterial);
+ring.rotation.x = Math.PI/2;
+group.add(ring);
+
+/* SHADOW DISC */
+
+const shadowGeometry = new THREE.CircleGeometry(3.2,32);
+const shadowMaterial = new THREE.MeshBasicMaterial({
+color:0x000000,
+transparent:true,
+opacity:0.4
+});
+
+const shadow = new THREE.Mesh(shadowGeometry,shadowMaterial);
+shadow.rotation.x = -Math.PI/2;
+shadow.position.y = -3;
+scene.add(shadow);
+
+/* ---------- SCROLL CONTROL ---------- */
+
+let targetScroll = 0;
+let currentScroll = 0;
+
+window.addEventListener("scroll",()=>{
+targetScroll = window.scrollY /
+(document.body.scrollHeight - window.innerHeight);
+});
+
+/* ---------- ANIMATION LOOP ---------- */
+
+function animate(){
+requestAnimationFrame(animate);
+
+/* smooth easing */
+currentScroll += (targetScroll - currentScroll)*0.05;
+
+/* rotation */
+slab.rotation.y += 0.005;
+ring.rotation.z += 0.01;
+
+/* cinematic camera zoom */
+camera.position.z = 9 - currentScroll*3;
+
+/* subtle float */
+group.position.y = Math.sin(Date.now()*0.001)*0.2;
+
+renderer.render(scene,camera);
+}
+
+animate();
+
+/* ---------- RESPONSIVE ---------- */
+
+window.addEventListener("resize",()=>{
+renderer.setSize(window.innerWidth,window.innerHeight);
+camera.aspect = window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+});
+</script>
+
+</body>
+</html>
